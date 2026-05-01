@@ -1,8 +1,7 @@
-# Note: Seurat v3 and v4 share the exact same 'Assay' class structure.
-# Setting assay.version = 'v3' instructs Seurat v5 to use the v3/v4 'Assay' format instead of the newer 'Assay5' format.
-options(Seurat.object.assay.version = 'v3')
-
 library(Seurat)
+
+# Ensure Seurat uses v3 assays by default for backward compatibility with Trailmaker
+options(Seurat.object.assay.version = "v3")
 
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) < 3) {
@@ -29,6 +28,9 @@ cat("Creating Seurat object...\n")
 # We place the processed TPM data in the counts slot as well to fulfill requirements.
 scdata <- CreateSeuratObject(counts = raw_data, assay = "RNA")
 
+# Convert to v4 format immediately after creation to ensure Trailmaker compatibility
+scdata@assays$RNA <- as(object = scdata@assays$RNA, Class = "Assay")
+
 cat("=== Dataset Information ===\n")
 print(scdata)
 cat("Preview of Feature Names (Genes):\n")
@@ -50,14 +52,19 @@ scdata <- ScaleData(scdata)
 cat("Running PCA...\n")
 # Trailmaker requirement: scdata@reductions contains the embeddings for pca
 scdata <- RunPCA(scdata, features = VariableFeatures(object = scdata), verbose = FALSE)
+# Ensure v4 compatibility for PCA reduction
+scdata[["pca"]] <- as(object = scdata[["pca"]], Class = "DimReduc")
 
 cat("Running UMAP...\n")
 # Trailmaker requirement: scdata@reductions contains either umap or tsne
 # default dimensionality reduction must be named exactly umap or tsne
 scdata <- RunUMAP(scdata, dims = 1:20, reduction.name = "umap", n.components = 3L, verbose = FALSE)
+# Ensure v4 compatibility for UMAP reduction
+scdata[["umap"]] <- as(object = scdata[["umap"]], Class = "DimReduc")
 
-cat("Spoofing Seurat object version to v4.4.0 for Trailmaker compatibility...\n")
-scdata@version <- package_version("4.4.0")
+# Remove all other assays and reductions (keep only RNA, pca, umap/tsne)
+scdata@assays <- scdata@assays["RNA"]
+scdata@reductions <- scdata@reductions[intersect(names(scdata@reductions), c("pca", "umap", "tsne"))]
 
 cat("Saving Seurat object to:", output_file, "\n")
 saveRDS(scdata, file = output_file)
