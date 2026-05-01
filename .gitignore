@@ -1,0 +1,11 @@
+# Ignore everything
+*
+
+# But do track R and shell scripts
+!*.R
+!*.r
+!*.sh
+!.gitignore
+
+# Don't ignore directories, so git can find files inside them
+!*/
