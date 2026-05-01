@@ -5,12 +5,13 @@ options(Seurat.object.assay.version = 'v3')
 library(Seurat)
 
 args <- commandArgs(trailingOnly = TRUE)
-if (length(args) < 2) {
-    stop("Usage: Rscript prepare_trailmaker.R <input_tsv> <output_rds>")
+if (length(args) < 3) {
+    stop("Usage: Rscript prepare_trailmaker.R <input_tsv> <output_rds> <sample_name>")
 }
 
 input_file <- args[1]
 output_file <- args[2]
+sample_name <- args[3]
 
 cat("Reading input file:", input_file, "\n")
 # Read TSV file using data.table for speed
@@ -37,7 +38,7 @@ print(head(colnames(scdata)))
 cat("===========================\n")
 
 # Trailmaker requirement: scdata$samples assignment
-scdata$samples <- "GSM3828672_GBM_IDHwt"
+scdata$samples <- sample_name
 
 cat("Running normalisation, feature selection, and scaling...\n")
 # Although it's TPM, we apply NormalizeData (log1p) to ensure the data slot is populated
