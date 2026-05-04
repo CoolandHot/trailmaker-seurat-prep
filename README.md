@@ -5,7 +5,7 @@ This repository contains a pipeline to prepare single-cell RNA-seq datasets (spe
 ## Scripts
 
 - `run_prepare_trailmaker.sh`: A shell wrapper that automatically decompresses the input dataset and invokes the R script.
-- `prepare_trailmaker.R`: The core R script that constructs the Seurat object, ensures proper Assay class formatting, performs dimensionality reduction (PCA & UMAP), and spoofs the object version to bypass platform validation constraints.
+- `prepare_trailmaker.R`: The core R script that constructs the Seurat object, ensures proper Assay class formatting, performs dimensionality reduction (PCA & UMAP), runs clustering (FindNeighbors & FindClusters), and ensures Seurat v4 compatibility.
 
 ## Trailmaker Seurat Object Requirements
 
@@ -19,7 +19,7 @@ This pipeline explicitly adheres to the Trailmaker upload specifications. For a 
   - `scdata[['RNA']]@counts`: Must contain raw feature counts.
   - `scdata@reductions`: Must contain the embeddings for PCA, as well as either UMAP or tSNE.
 - **Auto-detection:**
-  - Cluster metadata located in `scdata@meta.data` is auto-detected.
+  - Cluster metadata located in `scdata@meta.data` is auto-detected and **required** (e.g. `seurat_clusters`). The script automatically generates these.
   - Sample-level metadata in `scdata@meta.data` that groups samples in `scdata$samples` is auto-detected for downstream analysis.
 
 ## Usage

@@ -55,6 +55,11 @@ scdata <- RunPCA(scdata, features = VariableFeatures(object = scdata), verbose =
 # Ensure v4 compatibility for PCA reduction
 scdata[["pca"]] <- as(object = scdata[["pca"]], Class = "DimReduc")
 
+cat("Finding neighbors and clusters...\n")
+# Trailmaker requirement: Seurat object requires at least one cluster column in meta.data
+scdata <- FindNeighbors(scdata, dims = 1:20, verbose = FALSE)
+scdata <- FindClusters(scdata, resolution = 0.5, verbose = FALSE)
+
 cat("Running UMAP...\n")
 # Trailmaker requirement: scdata@reductions contains either umap or tsne
 # default dimensionality reduction must be named exactly umap or tsne
